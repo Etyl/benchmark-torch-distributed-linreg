@@ -13,7 +13,13 @@ solver:
     batch_size: [32]
     lr: [1e-3]
     adam: [false]
+  local:
+    n_workers: [16]
+    batch_size: [32]
+    lr: [1e-3]
+    adam: [False]
+    local_steps: [1, 4]
 
 n_repetitions: 1
 timeout: 100
-no-cache: true
+# no-cache: true
