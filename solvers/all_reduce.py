@@ -2,7 +2,7 @@ from benchopt.stopping_criterion import SufficientProgressCriterion
 import os
 import torch
 import torch.nn as nn
-from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.distributed as dist
 
 from benchmark_utils.mpi_solver import DistributedSolver
 from benchmark_utils.dataset_utils import get_dataloader
@@ -26,24 +26,21 @@ class Solver(DistributedSolver):
 
     @classmethod
     def init_worker(cls, args, rank, world_size):
-        """
-        Initialize the worker environment, clear logs, and load data.
-        Returns the local data tensor (X_local).
-        """
+        torch.manual_seed(0)
         dataloader = get_dataloader(
             args.x_path, args.y_path, args.batch_size
         )
         model = nn.Linear(
             dataloader.dataset.X.shape[1],
             dataloader.dataset.Y.shape[1],
-            bias=False
+            bias=False,
         )
+
         if args.device == "cpu":
-            model = DDP(model)
+            pass
         elif args.device.startswith("cuda"):
             local_rank = int(os.environ["LOCAL_RANK"])
             model = model.to(local_rank)
-            model = DDP(model, device_ids=[local_rank])
         else:
             raise ValueError(f"Unsupported device: {args.device}")
 
@@ -62,6 +59,8 @@ class Solver(DistributedSolver):
 
         criterion = nn.MSELoss()
 
+        device = next(model.parameters()).device
+
         k = 0
         while True:
             for x, y in dataloader:
@@ -69,13 +68,20 @@ class Solver(DistributedSolver):
 
                 k += 1
                 if k > n_iter:
-                    return dict(model=model.module.to("cpu"))
+                    return dict(model=model.to("cpu"))
 
-                # Local Computation
-                y_pred = model(x.to(model.device))
-                loss = criterion(y_pred, y.to(model.device))
+                y_pred = model(x.to(device))
+                loss = criterion(y_pred, y.to(device))
 
                 loss.backward()
+
+                # Synchronize gradients
+                with torch.no_grad():
+                    for param in model.parameters():
+                        if param.grad is not None:
+                            dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
+                            param.grad.data /= world_size
+
                 optim.step()
 
 

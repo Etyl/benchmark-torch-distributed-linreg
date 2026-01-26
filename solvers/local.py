@@ -16,7 +16,7 @@ class Solver(DistributedSolver):
         "batch_size": [32],
         "lr": [1e-3],
         "adam": [True, False],
-        "local_steps": [4, 16, 32]
+        "local_steps": [1, 4],
     }
 
     requirements = ["numpy", "torch"]
@@ -27,13 +27,14 @@ class Solver(DistributedSolver):
 
     @classmethod
     def init_worker(cls, args, rank, world_size):
+        torch.manual_seed(0)
         dataloader = get_dataloader(
             args.x_path, args.y_path, args.batch_size
         )
         model = nn.Linear(
             dataloader.dataset.X.shape[1],
             dataloader.dataset.Y.shape[1],
-            bias=False
+            bias=False,
         )
 
         if args.device == "cpu":
@@ -59,7 +60,6 @@ class Solver(DistributedSolver):
 
         criterion = nn.MSELoss()
 
-        # FIX: Get device explicitly
         device = next(model.parameters()).device
 
         k = 0
@@ -71,18 +71,17 @@ class Solver(DistributedSolver):
                 if k > n_iter:
                     return dict(model=model.to("cpu"))
 
-                # FIX: Move data to 'device'
                 y_pred = model(x.to(device))
                 loss = criterion(y_pred, y.to(device))
 
                 loss.backward()
                 optim.step()
 
-                if k % args.local_steps == 0:
-                    with torch.no_grad():
-                        for param in model.parameters():
-                            dist.all_reduce(param.data, op=dist.ReduceOp.SUM)
-                            param.data /= world_size
+                # Synchronize models
+                with torch.no_grad():
+                    for param in model.parameters():
+                        dist.all_reduce(param.data, op=dist.ReduceOp.SUM)
+                        param.data /= world_size
 
 
 if __name__ == "__main__":

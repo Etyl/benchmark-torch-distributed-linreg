@@ -1,8 +1,8 @@
 dataset:
   simulated:
     n: [16384]
-    d1: [400]
-    d2: [400]
+    d1: [100]
+    d2: [100]
     iid: [true]
     n_blocks: [16]
     noise: [0.1]
@@ -18,8 +18,8 @@ solver:
     batch_size: [32]
     lr: [1e-3]
     adam: [False]
-    local_steps: [1, 4]
+    local_steps: [1]
 
 n_repetitions: 1
 timeout: 100
-# no-cache: true
+no-cache: true
