@@ -16,17 +16,13 @@ def setup_distributed(device):
         os.environ["LOCAL_RANK"] = os.environ["SLURM_LOCALID"]
         os.environ["WORLD_SIZE"] = os.environ["SLURM_NTASKS"]
 
-    local_rank = int(os.environ["LOCAL_RANK"])
     if device.startswith("cuda"):
         dist.init_process_group(backend="nccl", init_method="env://")
-        torch.cuda.set_device(local_rank)
     elif device == "cpu":
         dist.init_process_group(backend="gloo", init_method="env://")
     else:
         raise ValueError(f"Unsupported device: {device}")
 
-    # Set the specific GPU for this process
-    return local_rank
 
 
 class Solver(BaseSolver):
@@ -44,7 +40,7 @@ class Solver(BaseSolver):
 
     def set_objective(self, x_path, y_path, device):
         self.device = device
-        self.local_rank = setup_distributed(device)
+        setup_distributed(device)
 
         self.dataloader = get_dataloader(
             x_path, y_path, int(self.batch_size)
@@ -53,7 +49,7 @@ class Solver(BaseSolver):
             self.dataloader.dataset.X.shape[1],
             self.dataloader.dataset.Y.shape[1],
             bias=False,
-        ).to(self.local_rank)
+        ).to(self.device)
 
     def run(self, _):
         use_cuda = torch.cuda.is_available()
