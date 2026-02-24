@@ -7,6 +7,6 @@ slurm_additional_parameters:
   gpus-per-task: 1
   cpus-per-task: 10
   qos: qos_gpu-dev
-  account: 105272@v100
+  account: lzs@v100
 slurm_setup:  # sbatch script commands added before the main job
   - module load pytorch-gpu
