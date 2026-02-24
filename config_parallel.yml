@@ -9,4 +9,4 @@ slurm_additional_parameters:
   qos: qos_gpu-dev
   account: 105272@v100
 slurm_setup:  # sbatch script commands added before the main job
-  - module pytorch-gpu
+  - module load pytorch-gpu
