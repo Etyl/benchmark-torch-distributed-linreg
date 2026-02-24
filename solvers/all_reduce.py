@@ -47,7 +47,7 @@ class Solver(BaseSolver):
         self.local_rank = setup_distributed(device)
 
         self.dataloader = get_dataloader(
-            x_path, y_path, self.batch_size
+            x_path, y_path, int(self.batch_size)
         )
         self.model = nn.Linear(
             self.dataloader.dataset.X.shape[1],
@@ -61,7 +61,7 @@ class Solver(BaseSolver):
             start = torch.cuda.Event(enable_timing=True)
             end = torch.cuda.Event(enable_timing=True)
 
-        optim = torch.optim.Adam(self.model.parameters(), lr=self.lr)
+        optim = torch.optim.Adam(self.model.parameters(), lr=float(self.lr))
         criterion = nn.MSELoss()
 
         world_size = int(os.environ["WORLD_SIZE"])
