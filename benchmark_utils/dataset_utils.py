@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.distributed import DistributedSampler
@@ -19,9 +18,7 @@ class TorchDataset(Dataset):
         )
 
 
-def get_dataloader(x_path, y_path, batch_size):
-    X = np.load(x_path, mmap_mode='r')
-    Y = np.load(y_path, mmap_mode='r')
+def get_dataloader(X, Y, batch_size):
     dataset = TorchDataset(X, Y)
     sampler = DistributedSampler(dataset)
     dataloader = DataLoader(

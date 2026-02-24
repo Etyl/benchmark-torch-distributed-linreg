@@ -33,18 +33,20 @@ class Solver(BaseSolver):
         "lr": [1e-3],
     }
 
-    requirements = ["numpy", "pytorch:pytorch"]
+    requirements = ["pytorch:pytorch"]
 
     sampling_strategy = "run_once"
 
-    def set_objective(self, x_path, y_path, device):
+    def set_objective(self, X, Y, device):
+        self.X = X
+        self.Y = Y
         self.device = device
         setup_distributed(device)
         local_rank = int(os.environ["LOCAL_RANK"])
         torch.cuda.set_device(local_rank)
 
         self.dataloader = get_dataloader(
-            x_path, y_path, int(self.batch_size)
+            X, Y, int(self.batch_size)
         )
         self.model = nn.Linear(
             self.dataloader.dataset.X.shape[1],

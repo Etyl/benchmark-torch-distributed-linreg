@@ -63,7 +63,4 @@ class Dataset(BaseDataset):
             X = X[perm]
             Y = Y[perm]
 
-        np.save(x_path, X)
-        np.save(y_path, Y)
-
-        return dict(x_path=x_path, y_path=y_path)
+        return dict(X=X, Y=Y)
