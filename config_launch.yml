@@ -4,13 +4,12 @@ objective:
 
 dataset:
   simulated:
-    n: [30384]
-    d1: [4000]
-    d2: [4000]
+    n: [32768]
+    d1: [2000, 4000, 8000]
 
 solver:
   all-reduce:
-    batch_size: [64, 512, 2048]
+    batch_size: [64, 512, 2048, 8192]
     lr: [1e-3]
     slurm_nodes: [4]
     slurm_gpus_per_node: [1]

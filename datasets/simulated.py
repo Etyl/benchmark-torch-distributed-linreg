@@ -10,7 +10,6 @@ class Dataset(BaseDataset):
     parameters = {
         'n': [16*1024],
         'd1': [400],
-        'd2': [400],
     }
     requirements = ["numpy"]
 
@@ -18,7 +17,7 @@ class Dataset(BaseDataset):
         rng = np.random.RandomState(42)
 
         X = rng.randn(self.n, self.d1)
-        W_linear = rng.randn(self.d1, self.d2)
+        W_linear = rng.randn(self.d1, self.d1)
         Y = X @ W_linear
 
         return dict(X=X, Y=Y)
