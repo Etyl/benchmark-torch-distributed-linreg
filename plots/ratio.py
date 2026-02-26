@@ -15,14 +15,13 @@ class Plot(BasePlot):
         for solver, df_filtered in df.groupby('solver_name'):
             medians = df_filtered.groupby('stop_val').median(numeric_only=True)
             y = medians["objective_comm_ratio"].values.tolist()
-            x = medians["objective_batch_ratio"].values.tolist()
             solver_name = solver.split("[")[0]
             batch_size = solver.split("batch_size=")[1].split(",")[0]
             d1 = df_filtered["dataset_name"].iloc[0]
             d1 = d1.split("d1=")[1].split(",")[0]
             solver_label = f"{solver_name}[batch_size={batch_size},d1={d1}]"
             curve_data = {
-                "x": x,
+                "x": [int(batch_size) / int(d1)],
                 "y": y,
                 "label": solver_label,
                 **self.get_style(solver_label)
