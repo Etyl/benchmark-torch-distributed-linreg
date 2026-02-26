@@ -1,7 +1,7 @@
 from benchopt import BasePlot
 
 
-class ObjectiveCurvePlot(BasePlot):
+class Plot(BasePlot):
     name = "Communication Ratio"
     type = "scatter"
     options = {
@@ -9,7 +9,9 @@ class ObjectiveCurvePlot(BasePlot):
     }
 
     def plot(self, df, dataset):
-        df = df.filter(df["dataset_name"].str.contains(dataset))
+        print(df)
+        print(df["dataset_name"])
+        df = df[df["dataset_name"].str.contains(dataset, na=False)]
 
         plots = []
         for solver, df_filtered in df.groupby('solver_name'):
