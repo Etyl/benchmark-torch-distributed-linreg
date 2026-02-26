@@ -15,5 +15,5 @@ solver:
     slurm_gpus_per_node: [1]
 
 parallel_config: config_parallel.yml
-n_repetitions: 1
-timeout: 200
+n_repetitions: 5
+timeout: 1000
