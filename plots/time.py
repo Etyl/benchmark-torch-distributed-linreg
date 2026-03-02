@@ -7,14 +7,18 @@ class Plot(BasePlot):
     options = {
         "objective": ...,
         "dataset": ...,
+        "record_device": ["cpu", "gpu"],
     }
 
     def plot(self, df, objective, dataset):
         df = df.query(f"objective_name == '{objective}' and dataset_name == '{dataset}'")
-
+        if self.record_device == "gpu":
+            objective_column = "objective_comm_time"
+        else:
+            objective_column = "objective_comm_time_cpu"
         plot_data = []
         for solver, df_filtered in df.groupby('solver_name'):
-            y = [df_filtered['objective_comm_time'].values.tolist()]
+            y = [df_filtered[objective_column].values.tolist()]
             x = [solver]
 
             plot_data.append({
