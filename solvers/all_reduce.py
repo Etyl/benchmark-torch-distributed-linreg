@@ -98,7 +98,6 @@ class Solver(BaseSolver):
 
         if use_cuda:
             torch.cuda.synchronize()
-            dist.barrier()
             start_run.record()
         else:
             t0_run = time.perf_counter()
