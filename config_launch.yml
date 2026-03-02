@@ -16,4 +16,4 @@ solver:
 
 parallel_config: config_parallel.yml
 n_repetitions: 5
-timeout: 1000
+timeout: 100000

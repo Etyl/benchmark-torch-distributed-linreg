@@ -145,7 +145,6 @@ class Solver(BaseSolver):
                     break
 
         if use_cuda:
-            dist.barrier()
             end_run.record()
             torch.cuda.synchronize()
             self.logs["run_time"].append(start_run.elapsed_time(end_run)/1000)
