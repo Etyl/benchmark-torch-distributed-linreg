@@ -98,27 +98,17 @@ class Solver(BaseSolver):
 
         if use_cuda:
             torch.cuda.synchronize()
+            dist.barrier()
             start_run.record()
         else:
             t0_run = time.perf_counter()
 
         k = 0
-        while True:
+        stop_training = False
+        while not stop_training:
             for x, y in self.dataloader:
 
                 optim.zero_grad()
-
-                k += 1
-                if k > 100:
-                    if use_cuda:
-                        dist.barrier()
-                        end_run.record()
-                        torch.cuda.synchronize()
-                        self.logs["run_time"].append(start_run.elapsed_time(end_run)/1000)
-                    else:
-                        self.logs["run_time"].append(time.perf_counter() - t0_run)
-                    dist.destroy_process_group()
-                    return
 
                 y_pred = self.model(x.to(self.device))
                 loss = criterion(y_pred, y.to(self.device))
@@ -139,7 +129,6 @@ class Solver(BaseSolver):
                             param.grad.data /= world_size
 
                 if use_cuda:
-                    dist.barrier()
                     end_com.record()
                     torch.cuda.synchronize()
                     self.logs["comm_time"].append(start_com.elapsed_time(end_com)/1000)
@@ -148,6 +137,19 @@ class Solver(BaseSolver):
                 self.logs["comm_time_cpu"].append(time.perf_counter() - t0_com)
 
                 optim.step()
+
+                k += 1
+                if k > 100:
+                    stop_training = True
+
+        if use_cuda:
+            dist.barrier()
+            end_run.record()
+            torch.cuda.synchronize()
+            self.logs["run_time"].append(start_run.elapsed_time(end_run)/1000)
+        else:
+            self.logs["run_time"].append(time.perf_counter() - t0_run)
+        dist.destroy_process_group()
 
     def get_result(self):
         return dict(
