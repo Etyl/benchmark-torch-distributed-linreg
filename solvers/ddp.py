@@ -28,7 +28,7 @@ def setup_distributed(device):
 
 
 class Solver(BaseSolver):
-    name = "all-reduce"
+    name = "ddp"
 
     parameters = {
         "batch_size": [32],
@@ -50,35 +50,23 @@ class Solver(BaseSolver):
         setup_distributed(self.device)
         local_rank = int(os.environ["LOCAL_RANK"])
         torch.cuda.set_device(local_rank)
-        self.model = self.model.to(self.device)
+        model = torch.nn.parallel.DistributedDataParallel(self.model.to(self.device), device_ids=[local_rank])
 
         use_cuda = self.device.startswith("cuda")
         if use_cuda:
             start_run = torch.cuda.Event(enable_timing=True)
-            start_com = torch.cuda.Event(enable_timing=True)
             end_run = torch.cuda.Event(enable_timing=True)
-            end_com = torch.cuda.Event(enable_timing=True)
 
-        optim = torch.optim.Adam(self.model.parameters(), lr=float(self.lr))
+        optim = torch.optim.Adam(model.parameters(), lr=float(self.lr))
         criterion = nn.MSELoss()
-
-        world_size = int(os.environ["WORLD_SIZE"])
-
         self.logs = defaultdict(list)
 
         for x, y in self.dataloader:
             optim.zero_grad()
 
-            y_pred = self.model(x.to(self.device))
+            y_pred = model(x.to(self.device))
             loss = criterion(y_pred, y.to(self.device))
             loss.backward()
-
-            with torch.no_grad():
-                for param in self.model.parameters():
-                    if param.grad is not None:
-                        dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
-                        param.grad.data /= world_size
-
             optim.step()
             break
 
@@ -97,32 +85,10 @@ class Solver(BaseSolver):
 
                 optim.zero_grad()
 
-                y_pred = self.model(x.to(self.device))
+                y_pred = model(x.to(self.device))
                 loss = criterion(y_pred, y.to(self.device))
 
                 loss.backward()
-
-                # Synchronize gradients
-                if use_cuda:
-                    torch.cuda.synchronize()
-                    dist.barrier()
-                    start_com.record()
-                t0_com = time.perf_counter()
-
-                with torch.no_grad():
-                    for param in self.model.parameters():
-                        if param.grad is not None:
-                            dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
-                            param.grad.data /= world_size
-
-                if use_cuda:
-                    end_com.record()
-                    torch.cuda.synchronize()
-                    self.logs["comm_time"].append(start_com.elapsed_time(end_com)/1000)
-                else:
-                    self.logs["comm_time"].append(time.perf_counter() - t0_com)
-                self.logs["comm_time_cpu"].append(time.perf_counter() - t0_com)
-
                 optim.step()
 
                 k += 1

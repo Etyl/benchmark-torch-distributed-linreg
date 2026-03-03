@@ -2,22 +2,22 @@ from benchopt import BasePlot
 
 
 class Plot(BasePlot):
-    name = "Communication Time"
+    name = "Metrics"
     type = "boxplot"
     options = {
         "objective": ...,
         "dataset": ...,
-        "record_device": ["cpu", "gpu"],
+        "metric": ["comm_time", "comm_time_cpu", "run_time"],
     }
 
-    def plot(self, df, objective, dataset, record_device):
+    def plot(self, df, objective, dataset, metric):
         df = df.query(f"objective_name == '{objective}' and dataset_name == '{dataset}'")
-        if record_device == "gpu":
-            objective_column = "objective_comm_time"
-        else:
-            objective_column = "objective_comm_time_cpu"
+        objective_column = f"objective_{metric}"
         plot_data = []
         for solver, df_filtered in df.groupby('solver_name'):
+            if objective_column not in df_filtered.columns:
+                continue
+
             y = [df_filtered[objective_column].values.tolist()]
             x = [solver]
 

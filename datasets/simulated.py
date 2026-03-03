@@ -1,7 +1,9 @@
 from benchopt import BaseDataset
-from benchmark_utils import get_data_path
 import numpy as np
-import os
+import torch.nn as nn
+
+from benchmark_utils.dataset_utils import get_dataloader
+
 
 
 class Dataset(BaseDataset):
@@ -20,4 +22,11 @@ class Dataset(BaseDataset):
         W_linear = rng.randn(self.d1, self.d1)
         Y = X @ W_linear
 
-        return dict(X=X, Y=Y)
+        dataloader = get_dataloader(X, Y, batch_size=self.n)
+        self.model = nn.Linear(
+            self.dataloader.dataset.X.shape[1],
+            self.dataloader.dataset.Y.shape[1],
+            bias=False,
+        )
+
+        return dict(dataloader=dataloader, model=self.model)
