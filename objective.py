@@ -10,8 +10,8 @@ class Objective(BaseObjective):
         "device": ["cpu"],
     }
 
-    def set_data(self, dataloader, model):
-        self.dataloader = dataloader
+    def set_data(self, dataset, model):
+        self.dataset = dataset
         self.model = model
 
     def get_one_result(self):
@@ -27,7 +27,7 @@ class Objective(BaseObjective):
 
     def get_objective(self):
         return dict(
-            dataloader=copy.deepcopy(self.dataloader),
+            dataset=copy.deepcopy(self.dataset),
             model=copy.deepcopy(self.model),
             device=self.device
         )
