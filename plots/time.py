@@ -30,7 +30,7 @@ class Plot(BasePlot):
 
         return plot_data
 
-    def get_metadata(self, df, objective, dataset, record_device):
+    def get_metadata(self, df, objective, dataset, metric):
         return {
             "title": f"Communication Time\n{objective}\nData: {dataset}",
         }
