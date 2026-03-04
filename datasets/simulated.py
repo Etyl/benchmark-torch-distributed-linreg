@@ -24,8 +24,8 @@ class Dataset(BaseDataset):
         dataset = TorchDataset(X, Y)
 
         self.model = nn.Linear(
-            self.dataloader.dataset.X.shape[1],
-            self.dataloader.dataset.Y.shape[1],
+            X.shape[1],
+            Y.shape[1],
             bias=False,
         )
 
