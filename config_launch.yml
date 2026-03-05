@@ -11,7 +11,7 @@ solver:
   all-reduce:
     batch_size: [4096]
     lr: [1e-3]
-    slurm_nodes: [2,4,8,16]
+    slurm_nodes: [2]
     slurm_gpus_per_node: [1]
   # ddp:
   #   batch_size: [4096]
