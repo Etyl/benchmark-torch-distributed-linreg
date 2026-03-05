@@ -6,7 +6,7 @@ from benchmark_utils.dataset_utils import TorchDataset
 
 
 class Dataset(BaseDataset):
-    name = "simulated"
+    name = "mlp"
 
     parameters = {
         'n': [16*1024],
