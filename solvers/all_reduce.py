@@ -16,9 +16,10 @@ def setup_distributed(device):
         os.environ["LOCAL_RANK"] = os.environ["SLURM_LOCALID"]
         os.environ["WORLD_SIZE"] = os.environ["SLURM_NTASKS"]
 
+    # NCCL debugging environment variables
     os.environ["NCCL_DEBUG"] = "INFO"
     os.environ["NCCL_DEBUG_SUBSYS"] = "INIT,TUNING"
-    os.environ["NCCL_DEBUG_FILE"] = "/lustre/fshomisc/home/rech/geniiv01/uhq13gg/benchmark-torch-distributed-linreg/benchopt_run/nccl_log_%h_%p.txt"
+
     # Check if dist is already initialized to avoid reinitialization
     if dist.is_initialized():
         return
