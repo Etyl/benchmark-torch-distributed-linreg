@@ -20,9 +20,9 @@ class Plot(BasePlot):
                     continue
                 y = df_dataset["objective_comm_ratio"].values.tolist()
                 solver_name = solver.split("[")[0]
-                global_batch_size = int(re.search(r"batch_size=(\d+)", solver).group(1))
+                local_batch_size = int(re.search(r"batch_size=(\d+)", solver).group(1))
                 n_nodes = int(re.search(r"slurm_nodes=(\d+)", solver).group(1))
-                local_batch_size = global_batch_size // n_nodes
+                global_batch_size = local_batch_size * n_nodes
                 if batch_size == "local":
                     batch_size_val = local_batch_size
                 else:

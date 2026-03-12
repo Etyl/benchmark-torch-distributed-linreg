@@ -3,7 +3,7 @@ from benchopt import BasePlot
 
 class Plot(BasePlot):
     name = "Metrics"
-    type = "boxplot"
+    type = "bar_chart"
     options = {
         "objective": ...,
         "dataset": ...,
@@ -14,19 +14,30 @@ class Plot(BasePlot):
         df = df.query(f"objective_name == '{objective}' and dataset_name == '{dataset}'")
         objective_column = f"objective_{metric}"
         plot_data = []
-        for solver, df_filtered in df.groupby('solver_name'):
-            if objective_column not in df_filtered.columns:
-                continue
 
-            y = [df_filtered[objective_column].values.tolist()]
-            x = [solver]
+        solvers = df['solver_name'].unique()
+        all_reduce_solvers = [solver for solver in solvers if 'all-reduce' in solver]
+        all_reduce_solvers.sort(key=lambda s: int(s.split('slurm_nodes=')[1].split(']')[0]))
 
-            plot_data.append({
-                "x": x,
-                "y": y,
-                "label": solver,
-                "color": self.get_style(solver)["color"],
-            })
+        for solver in all_reduce_solvers:
+            solver_params = solver.split('[')[1]
+            total_solvers = [s for s in solvers if solver_params in s]
+
+            for s in total_solvers:
+                solver_type = s.split('[')[0]
+                df_filtered = df[df['solver_name'] == s]
+                if objective_column not in df_filtered.columns:
+                    continue
+
+                y = df_filtered[objective_column].dropna().values.tolist()
+                if len(y) == 0:
+                    continue
+
+                plot_data.append({
+                    "y": y,
+                    "label": s,
+                    "color": self.get_style(solver_type)["color"],
+                })
 
         return plot_data
 

@@ -4,19 +4,19 @@ objective:
 
 dataset:
   mlp:
-    n: [32768]
+    n: [131072]
     d: [2000, 4000, 8000]
     layers: [1]
     bias: [False]
 
 solver:
   all-reduce:
-    global_batch_size: [256, 1024, 4096]
+    local_batch_size: [256, 1024, 4096]
     lr: [1e-3]
     slurm_nodes: [2,4,8]
     slurm_gpus_per_node: [1]
   # ddp:
-  #   global_batch_size: [256, 1024, 4096, 8192]
+  #   local_batch_size: [256, 1024, 4096, 8192]
   #   lr: [1e-3]
   #   slurm_nodes: [4]
   #   slurm_gpus_per_node: [1]

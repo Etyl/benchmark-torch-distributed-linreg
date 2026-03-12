@@ -37,7 +37,7 @@ class Solver(BaseSolver):
     name = "all-reduce"
 
     parameters = {
-        "global_batch_size": [32],
+        "local_batch_size": [32],
         "lr": [1e-3],
         "slurm_nodes": [1],
         "slurm_gpus_per_node": [2]
@@ -58,7 +58,7 @@ class Solver(BaseSolver):
         world_size = int(os.environ["WORLD_SIZE"])
         torch.cuda.set_device(local_rank)
         model = self.model.to(self.device)
-        dataloader = get_dataloader(self.dataset, batch_size=self.global_batch_size//world_size)
+        dataloader = get_dataloader(self.dataset, batch_size=self.local_batch_size)
 
         use_cuda = self.device.startswith("cuda")
         if use_cuda:
