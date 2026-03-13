@@ -57,7 +57,7 @@ class Solver(BaseSolver):
         local_rank = int(os.environ["LOCAL_RANK"])
         world_size = int(os.environ["WORLD_SIZE"])
         torch.cuda.set_device(local_rank)
-        model = self.model.to(self.device)
+        model = self.model.to(device=self.device)
         dataloader = get_dataloader(self.dataset, batch_size=self.local_batch_size)
 
         use_cuda = self.device.startswith("cuda")
@@ -69,8 +69,6 @@ class Solver(BaseSolver):
 
         optim = torch.optim.Adam(model.parameters(), lr=float(self.lr))
         criterion = nn.MSELoss()
-
-
 
         self.logs = defaultdict(list)
 
