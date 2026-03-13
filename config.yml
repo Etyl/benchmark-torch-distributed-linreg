@@ -1,0 +1,2 @@
+benchmark-torch-distributed-linreg:
+  data_home: /lustre/fswork/projects/rech/lzs/uhq13gg/benchmark-allreduce

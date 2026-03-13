@@ -3,7 +3,7 @@ import copy
 
 
 class Objective(BaseObjective):
-    name = "Linear Regression"
+    name = "all-reduce"
     min_benchopt_version = "1.8"
 
     parameters = {
