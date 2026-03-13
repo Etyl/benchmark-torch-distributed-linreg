@@ -1,5 +1,5 @@
 objective:
-  Linear Regression:
+  all-reduce:
     device: "cuda"
 
 dataset:
