@@ -22,6 +22,24 @@ class MLPDataset(torch.utils.data.Dataset):
         return X, Y
 
 
+class MLP(nn.Module):
+    def __init__(self, d, layers=1, bias=False):
+        super().__init__()
+        layers = []
+        for _ in range(self.layers):
+            layers.append(nn.Linear(self.d, self.d, bias=self.bias))
+            layers.append(nn.ReLU())
+        self.model = nn.Sequential(*layers)
+        self.criterion = nn.MSELoss()
+
+    def forward(self, x, y):
+        device = self.model[0].weight.device
+        x, y = x.to(device), y.to(device)
+        y_pred = self.model(x)
+        loss = self.criterion(y_pred, y)
+        return loss
+
+
 class Dataset(BaseDataset):
     name = "mlp"
 
@@ -35,11 +53,5 @@ class Dataset(BaseDataset):
 
     def get_data(self):
         dataset = MLPDataset(self.d, self.n)
-
-        layers = []
-        for _ in range(self.layers):
-            layers.append(nn.Linear(self.d, self.d, bias=self.bias))
-            layers.append(nn.ReLU())
-        model = nn.Sequential(*layers)
-
+        model = MLP(self.d, self.layers, self.bias)
         return dict(dataset=dataset, model=model)

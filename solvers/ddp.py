@@ -3,7 +3,6 @@ import time
 from benchopt import BaseSolver
 import os
 import torch
-import torch.nn as nn
 import torch.distributed as dist
 
 from benchmark_utils.dataset_utils import get_dataloader
@@ -26,7 +25,6 @@ def setup_distributed(device):
         dist.init_process_group(backend="gloo", init_method="env://")
     else:
         raise ValueError(f"Unsupported device: {device}")
-
 
 
 class Solver(BaseSolver):
@@ -62,14 +60,12 @@ class Solver(BaseSolver):
             end_run = torch.cuda.Event(enable_timing=True)
 
         optim = torch.optim.Adam(model.parameters(), lr=float(self.lr))
-        criterion = nn.MSELoss()
         self.logs = defaultdict(list)
 
-        for x, y in dataloader:
+        for batch in dataloader:
             optim.zero_grad()
 
-            y_pred = model(x.to(self.device))
-            loss = criterion(y_pred, y.to(self.device))
+            loss, *_ = model(*batch)
             loss.backward()
             optim.step()
             break
@@ -84,15 +80,14 @@ class Solver(BaseSolver):
         k = 0
         stop_training = False
         while not stop_training:
-            for x, y in dataloader:
+            for batch in dataloader:
                 print(f"Rank {dist.get_rank()} - Batch {k}")
 
                 optim.zero_grad()
 
-                y_pred = model(x.to(self.device))
-                loss = criterion(y_pred, y.to(self.device))
-
+                loss, *_ = model(*batch)
                 loss.backward()
+
                 optim.step()
 
                 k += 1

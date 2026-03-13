@@ -3,7 +3,6 @@ import time
 from benchopt import BaseSolver
 import os
 import torch
-import torch.nn as nn
 import torch.distributed as dist
 
 from benchmark_utils.dataset_utils import get_dataloader
@@ -68,15 +67,13 @@ class Solver(BaseSolver):
             end_com = torch.cuda.Event(enable_timing=True)
 
         optim = torch.optim.Adam(model.parameters(), lr=float(self.lr))
-        criterion = nn.MSELoss()
 
         self.logs = defaultdict(list)
 
-        for x, y in dataloader:
+        for batch in dataloader:
             optim.zero_grad()
 
-            y_pred = model(x.to(self.device))
-            loss = criterion(y_pred, y.to(self.device))
+            loss, *_ = model(*batch)
             loss.backward()
 
             with torch.no_grad():
@@ -103,9 +100,7 @@ class Solver(BaseSolver):
 
                 optim.zero_grad()
 
-                y_pred = model(x.to(self.device))
-                loss = criterion(y_pred, y.to(self.device))
-
+                loss, *_ = model(x.to(self.device), y.to(self.device))
                 loss.backward()
 
                 # Synchronize gradients
