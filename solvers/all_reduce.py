@@ -73,6 +73,7 @@ class Solver(BaseSolver):
         for batch in dataloader:
             optim.zero_grad()
 
+            batch = [x.to(self.device) for x in batch]
             loss, *_ = model(*batch)
             loss.backward()
 
@@ -95,12 +96,13 @@ class Solver(BaseSolver):
         k = 0
         stop_training = False
         while not stop_training:
-            for x, y in dataloader:
+            for batch in dataloader:
                 print(f"Rank {dist.get_rank()} - Batch {k}")
 
                 optim.zero_grad()
 
-                loss, *_ = model(x.to(self.device), y.to(self.device))
+                batch = [x.to(self.device) for x in batch]
+                loss, *_ = model(*batch)
                 loss.backward()
 
                 # Synchronize gradients

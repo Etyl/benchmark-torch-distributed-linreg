@@ -33,8 +33,6 @@ class MLP(nn.Module):
         self.criterion = nn.MSELoss()
 
     def forward(self, x, y):
-        device = self.model[0].weight.device
-        x, y = x.to(device), y.to(device)
         y_pred = self.model(x)
         loss = self.criterion(y_pred, y)
         return loss

@@ -65,6 +65,7 @@ class Solver(BaseSolver):
         for batch in dataloader:
             optim.zero_grad()
 
+            batch = [x.to(self.device) for x in batch]
             loss, *_ = model(*batch)
             loss.backward()
             optim.step()
@@ -85,6 +86,7 @@ class Solver(BaseSolver):
 
                 optim.zero_grad()
 
+                batch = [x.to(self.device) for x in batch]
                 loss, *_ = model(*batch)
                 loss.backward()
 
