@@ -2,7 +2,8 @@ backend: submitit
 slurm_time: 00:10:00
 slurm_stderr_to_stdout: True
 slurm_additional_parameters:
-  partition: gpu_p1
+  partition: gpu_p13
+  C: v100-32g
   tasks-per-node: 1
   cpus-per-task: 10
   qos: qos_gpu-t3
